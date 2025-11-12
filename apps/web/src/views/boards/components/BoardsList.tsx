@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { HiOutlineRectangleStack, HiOutlineTrash, HiArchiveBox, HiPhoto } from "react-icons/hi2";
+import { HiOutlineRectangleStack, HiOutlineTrash, HiArchiveBox, HiPhoto, HiPencil, HiLockClosed } from "react-icons/hi2";
 import { useState } from "react";
 
 import Button from "~/components/Button";
@@ -163,28 +163,99 @@ export function BoardsList({ isTemplate }: { isTemplate?: boolean }) {
 
   if (data?.length === 0)
     return (
-      <div className="z-10 flex h-full w-full items-center justify-center pb-[150px]">
-        <div className="rounded-xl border-2 border-light-400 bg-white px-16 py-12 shadow-lg dark:border-dark-500 dark:bg-dark-100">
-          <div className="flex flex-col items-center space-y-8">
-            <div className="flex flex-col items-center">
-              <HiOutlineRectangleStack className="h-10 w-10 text-light-800 dark:text-dark-800" />
-              <p className="mb-2 mt-4 text-[14px] font-bold text-light-1000 dark:text-dark-950">
-                No {isTemplate ? "templates" : "boards"}
-              </p>
-              <p className="text-[14px] text-light-900 dark:text-dark-900">
-                Get started by creating a new {isTemplate ? "template" : "board"}
-              </p>
+      <div className="w-full">
+        {/* Workspace Header */}
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mb-2">
+            {/* Workspace Avatar */}
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-coral to-coral-600 text-white font-bold text-lg shadow-md">
+              {workspace.name.charAt(0).toUpperCase()}
             </div>
-            <Button onClick={() => openModal("NEW_BOARD")}>
-              Create new {isTemplate ? "template" : "board"}
-            </Button>
+            
+            {/* Workspace Name and Edit Icon */}
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-semibold text-coral dark:text-coral">
+                {workspace.name}
+              </h1>
+              <button
+                onClick={() => openModal("WORKSPACE_SETTINGS")}
+                className="rounded p-1 transition-colors hover:bg-light-200 dark:hover:bg-dark-300"
+                title="Edit workspace name"
+              >
+                <HiPencil className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
+              </button>
+            </div>
+          </div>
+          
+          {/* Privacy Status */}
+          <div className="flex items-center gap-1.5 ml-[60px] text-sm text-neutral-600 dark:text-neutral-400">
+            <HiLockClosed className="h-3.5 w-3.5" />
+            <span>Private</span>
+          </div>
+          
+          {/* Divider */}
+          <div className="mt-4 border-t border-light-300 dark:border-dark-600" />
+        </div>
+
+        {/* Empty State */}
+        <div className="z-10 flex h-full w-full items-center justify-center pb-[150px]">
+          <div className="rounded-xl border-2 border-light-400 bg-white px-16 py-12 shadow-lg dark:border-dark-500 dark:bg-dark-100">
+            <div className="flex flex-col items-center space-y-8">
+              <div className="flex flex-col items-center">
+                <HiOutlineRectangleStack className="h-10 w-10 text-light-800 dark:text-dark-800" />
+                <p className="mb-2 mt-4 text-[14px] font-bold text-light-1000 dark:text-dark-950">
+                  No {isTemplate ? "templates" : "boards"}
+                </p>
+                <p className="text-[14px] text-light-900 dark:text-dark-900">
+                  Get started by creating a new {isTemplate ? "template" : "board"}
+                </p>
+              </div>
+              <Button onClick={() => openModal("NEW_BOARD")}>
+                Create new {isTemplate ? "template" : "board"}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
     );
 
   return (
-    <div className="3xl:grid-cols-4 grid h-fit w-full grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3">
+    <div className="w-full">
+      {/* Workspace Header */}
+      <div className="mb-6">
+        <div className="flex items-center gap-3 mb-2">
+          {/* Workspace Avatar */}
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-coral to-coral-600 text-white font-bold text-lg shadow-md">
+            {workspace.name.charAt(0).toUpperCase()}
+          </div>
+          
+          {/* Workspace Name and Edit Icon */}
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-semibold text-coral dark:text-coral">
+              {workspace.name}
+            </h1>
+            <button
+              onClick={() => openModal("WORKSPACE_SETTINGS")}
+              className="rounded p-1 transition-colors hover:bg-light-200 dark:hover:bg-dark-300"
+              title="Edit workspace name"
+            >
+              <HiPencil className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
+            </button>
+          </div>
+        </div>
+        
+        {/* Privacy Status */}
+        <div className="flex items-center gap-1.5 ml-[60px] text-sm text-neutral-600 dark:text-neutral-400">
+          <HiLockClosed className="h-3.5 w-3.5" />
+          <span>Private</span>
+        </div>
+        
+        {/* Divider */}
+        <div className="mt-4 border-t border-light-300 dark:border-dark-600" />
+      </div>
+
+      {/* Boards Grid */}
+      <div className="3xl:grid-cols-4 grid h-fit w-full grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3">
       {data?.map((board) => {
         const coverImageUrl = (board as any).coverImage || DEFAULT_COVER_IMAGE;
         
@@ -253,6 +324,7 @@ export function BoardsList({ isTemplate }: { isTemplate?: boolean }) {
           </div>
         );
       })}
+      </div>
     </div>
   );
 }

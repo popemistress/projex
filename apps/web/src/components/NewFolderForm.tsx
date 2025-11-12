@@ -66,8 +66,8 @@ export function NewFolderForm() {
   return (
     <div className="p-6">
       <div className="mb-6 flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
-          <HiFolder className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-coral/10 dark:bg-coral/20">
+          <HiFolder className="h-6 w-6 text-coral" />
         </div>
         <div>
           <h2 className="text-lg font-semibold text-neutral-900 dark:text-dark-1000">
@@ -93,7 +93,7 @@ export function NewFolderForm() {
             value={folderName}
             onChange={(e) => setFolderName(e.target.value)}
             placeholder="e.g., Marketing, Development, Personal"
-            className="w-full rounded-md border border-light-400 bg-light-50 px-3 py-2 text-sm text-neutral-900 placeholder-neutral-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-dark-500 dark:bg-dark-200 dark:text-dark-1000 dark:placeholder-dark-700"
+            className="w-full rounded-md border border-light-400 bg-light-50 px-3 py-2 text-sm text-neutral-900 placeholder-neutral-400 focus:border-coral focus:outline-none focus:ring-1 focus:ring-coral dark:border-dark-500 dark:bg-dark-200 dark:text-dark-1000 dark:placeholder-dark-700"
             autoFocus
             maxLength={50}
           />

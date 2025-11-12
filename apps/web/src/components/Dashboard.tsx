@@ -13,7 +13,10 @@ import { useClickOutside } from "~/hooks/useClickOutside";
 import { useModal } from "~/providers/modal";
 import { useWorkspace, WorkspaceProvider } from "~/providers/workspace";
 import DarkModeToggle from "./DarkModeToggle";
+import GlobalSearch from "./GlobalSearch";
 import SideNavigation from "./SideNavigation";
+import Modal from "./modal";
+import { NewFolderForm } from "./NewFolderForm";
 
 interface DashboardProps {
   children: React.ReactNode;
@@ -41,7 +44,7 @@ export default function Dashboard({
   hasRightPanel = false,
 }: DashboardProps) {
   const { resolvedTheme } = useTheme();
-  const { openModal } = useModal();
+  const { openModal, modalContentType, isOpen } = useModal();
   const { availableWorkspaces, hasLoaded } = useWorkspace();
 
   const { data: session, isPending: sessionLoading } = authClient.useSession();
@@ -110,11 +113,11 @@ export default function Dashboard({
       `}</style>
       <div className="relative flex h-screen flex-col bg-light-50 dark:bg-dark-50 md:bg-light-100 md:p-3 md:dark:bg-dark-100">
         {/* Mobile Header */}
-        <div className="flex h-12 items-center justify-between border-b border-light-300 bg-light-50 px-3 dark:border-dark-300 dark:bg-dark-50 md:hidden">
+        <div className="flex h-12 items-center justify-between gap-2 border-b border-light-300 bg-light-50 px-3 dark:border-dark-300 dark:bg-dark-50 md:hidden">
           <button
             ref={sideNavButtonRef}
             onClick={toggleSideNav}
-            className="rounded p-1.5 transition-all hover:bg-light-200 dark:hover:bg-dark-100"
+            className="shrink-0 rounded p-1.5 transition-all hover:bg-light-200 dark:hover:bg-dark-100"
           >
             {isSideNavOpen ? (
               <TbLayoutSidebarLeftCollapse
@@ -129,7 +132,11 @@ export default function Dashboard({
             )}
           </button>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-1 items-center justify-center">
+            <GlobalSearch />
+          </div>
+
+          <div className="flex shrink-0 items-center gap-2">
             <DarkModeToggle />
             {hasRightPanel && (
               <button
@@ -166,7 +173,14 @@ export default function Dashboard({
           </div>
 
           <div className="relative h-full min-h-0 w-full overflow-hidden md:rounded-lg md:border md:border-light-300 md:bg-light-50 md:dark:border-dark-300 md:dark:bg-dark-50">
-            <div className="relative flex h-full min-h-0 w-full overflow-hidden">
+            {/* Desktop Header with Search */}
+            <div className="hidden border-b border-light-300 bg-white px-6 py-3 dark:border-dark-300 dark:bg-dark-100 md:block">
+              <div className="flex items-center justify-center gap-4">
+                <GlobalSearch />
+              </div>
+            </div>
+
+            <div className="relative flex h-full min-h-0 w-full overflow-hidden md:h-[calc(100%-57px)]">
               <div className="h-full w-full overflow-y-auto">{children}</div>
 
               {/* Mobile Right Panel */}
@@ -189,6 +203,14 @@ export default function Dashboard({
           </div>
         </div>
       </div>
+
+      {/* Global Modals */}
+      <Modal
+        modalSize="sm"
+        isVisible={isOpen && modalContentType === "NEW_FOLDER"}
+      >
+        <NewFolderForm />
+      </Modal>
     </>
   );
 }
