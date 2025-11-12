@@ -5,19 +5,6 @@
   <p>The open-source project management alternative to Trello.</p>
 </div>
 
-<p align="center">
-  <a href="https://kan.bn/kan/roadmap">Roadmap</a>
-  ·
-  <a href="https://kan.bn">Website</a>
-  ·
-  <a href="https://docs.kan.bn">Docs</a>
-  ·
-  <a href="https://discord.gg/e6ejRb6CmT">Discord</a>
-</p>
-
-<div align="center">
-  <a href="https://github.com/kanbn/kan/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/badge/license-AGPLv3-purple"></a>
-</div>
 
 ## Features 💫
 
@@ -30,11 +17,6 @@
 - 🎨 **Templates** : Save time with reusable custom board templates
 - ⚡️ **Integrations (coming soon)** : Connect your favourite tools
 
-See our [roadmap](https://kan.bn/kan/roadmap) for upcoming features.
-
-## Screenshot 👁️
-
-<img width="1507" alt="hero-dark" src="https://github.com/user-attachments/assets/5f7b6ad3-f31d-4b45-93dc-0132b3f2afd4" />
 
 ## Made With 🛠️
 
@@ -45,76 +27,13 @@ See our [roadmap](https://kan.bn/kan/roadmap) for upcoming features.
 - [Drizzle ORM](https://orm.drizzle.team/?ref=kan.bn)
 - [React Email](https://react.email/?ref=kan.bn)
 
-## Self Hosting 🐳
-
-The easiest way to self-host Kan is with Docker Compose. This will set up everything for you including your postgres database.
-
-1. Create a new file called `docker-compose.yml` and paste the following configuration:
-
-```yaml
-services:
-  web:
-    image: ghcr.io/kanbn/kan:latest
-    container_name: kan-web
-    ports:
-      - "3000:3000"
-    networks:
-      - kan-network
-    environment:
-      NEXT_PUBLIC_BASE_URL: http://localhost:3000
-      BETTER_AUTH_SECRET: your_auth_secret
-      POSTGRES_URL: postgresql://kan:your_postgres_password@postgres:5432/kan_db
-      NEXT_PUBLIC_ALLOW_CREDENTIALS: true
-    depends_on:
-      - postgres
-    restart: unless-stopped
-
-  postgres:
-    image: postgres:15
-    container_name: kan-db
-    environment:
-      POSTGRES_DB: kan_db
-      POSTGRES_USER: kan
-      POSTGRES_PASSWORD: your_postgres_password
-    ports:
-      - 5432:5432
-    volumes:
-      - kan_postgres_data:/var/lib/postgresql/data
-    restart: unless-stopped
-    networks:
-      - kan-network
-
-networks:
-  kan-network:
-
-volumes:
-  kan_postgres_data:
-```
-
-2. Start the containers in detached mode:
-
-```bash
-docker compose up -d
-```
-
-3. Access Kan at http://localhost:3000
-
-The application will be running in the background. You can manage the containers using these commands:
-
-- To stop the containers: `docker compose down`
-- To view logs: `docker compose logs -f`
-- To restart the containers: `docker compose restart`
-
-For the complete Docker Compose configuration, see [docker-compose.yml](./docker-compose.yml) in the repository.
-
-> **Note**: The Docker Compose configuration shown above is a minimal example. For a complete setup with all features (email, OAuth, file uploads, etc.), you'll need to create a `.env` file with the required environment variables. See the Environment Variables section below for the full list of available options.
 
 ## Local Development 🧑‍💻
 
 1. Clone the repository (or fork)
 
 ```bash
-git clone https://github.com/kanbn/kan.git
+git clone https://github.com/popemistress/projex.git
 ```
 
 2. Install dependencies
@@ -123,7 +42,8 @@ git clone https://github.com/kanbn/kan.git
 pnpm install
 ```
 
-3. Copy `.env.example` to `.env` and configure your environment variables
+3. Edit  `.env` and configure your environment variables
+
 4. Migrate database
 
 ```bash
@@ -176,25 +96,4 @@ pnpm dev
 
 See `.env.example` for a complete list of supported environment variables.
 
-## Contributing 🤝
 
-We welcome contributions! Please read our [contribution guidelines](CONTRIBUTING.md) before submitting a pull request.
-
-## Contributors 👥
-
-<a href="https://github.com/kanbn/kan/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=kanbn/kan" />
-</a>
-
-## License 📝
-
-Kan is licensed under the [AGPLv3 license](LICENSE).
-
-## Contact 📧
-
-For support or to get in touch, please email [henry@kan.bn](mailto:henry@kan.bn) or join our [Discord server](https://discord.gg/e6ejRb6CmT).
-# projex
-# projex
-# projex
-# projex
-# projex
