@@ -8,6 +8,7 @@ interface WorkspaceContextProps {
   workspace: Workspace;
   isLoading: boolean;
   hasLoaded: boolean;
+  isWorkspaceReady: boolean;
   switchWorkspace: (_workspace: Workspace) => void;
   availableWorkspaces: Workspace[];
 }
@@ -91,7 +92,10 @@ export const WorkspaceProvider: React.FC<{ children: ReactNode }> = ({
         ({ workspace }) => workspace.publicId === storedWorkspaceId,
       );
 
-      if (!selectedWorkspace?.workspace) return;
+      if (!selectedWorkspace?.workspace) {
+        setHasLoaded(true);
+        return;
+      }
 
       setWorkspace({
         publicId: selectedWorkspace.workspace.publicId,
@@ -101,6 +105,7 @@ export const WorkspaceProvider: React.FC<{ children: ReactNode }> = ({
         description: selectedWorkspace.workspace.description,
         role: selectedWorkspace.role,
       });
+      setHasLoaded(true);
 
       if (workspacePublicId) {
         router.push(`/boards`);
@@ -110,7 +115,10 @@ export const WorkspaceProvider: React.FC<{ children: ReactNode }> = ({
       const primaryWorkspace = data[0]?.workspace;
       const primaryWorkspaceRole = data[0]?.role;
 
-      if (!primaryWorkspace || !primaryWorkspaceRole) return;
+      if (!primaryWorkspace || !primaryWorkspaceRole) {
+        setHasLoaded(true);
+        return;
+      }
       localStorage.setItem("workspacePublicId", primaryWorkspace.publicId);
       setWorkspace({
         publicId: primaryWorkspace.publicId,
@@ -120,8 +128,16 @@ export const WorkspaceProvider: React.FC<{ children: ReactNode }> = ({
         description: primaryWorkspace.description,
         role: primaryWorkspaceRole,
       });
+      setHasLoaded(true);
     }
   }, [data, isLoading, workspacePublicId, router]);
+
+  // Helper to check if workspace is ready to use
+  const isWorkspaceReady = 
+    hasLoaded && 
+    workspace.publicId !== "" && 
+    workspace.publicId.length >= 12 &&
+    workspace.name !== "";
 
   return (
     <WorkspaceContext.Provider
@@ -129,6 +145,7 @@ export const WorkspaceProvider: React.FC<{ children: ReactNode }> = ({
         workspace,
         isLoading,
         hasLoaded,
+        isWorkspaceReady,
         availableWorkspaces,
         switchWorkspace,
       }}

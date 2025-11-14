@@ -29,29 +29,29 @@ const Button = ({
   ...props
 }: ButtonProps) => {
   const classes = twMerge(
-    "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-2 text-sm font-semibold text-light-50 shadow-sm focus-visible:outline-none",
-    size === "xs" && "text-xs px-2 py-1",
-    size === "sm" && "text-xs",
-    size === "lg" && "py-[0.65rem]",
+    "inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
+    size === "xs" && "text-xs px-3 py-1.5",
+    size === "sm" && "text-sm px-3 py-2",
+    size === "lg" && "text-base px-5 py-3",
     fullWidth && "w-full",
     iconOnly && "p-0",
     iconOnly &&
       (size === "xs"
-        ? "h-6 w-6"
+        ? "h-7 w-7"
         : size === "sm"
-          ? "h-8 w-8"
+          ? "h-9 w-9"
           : size === "lg"
-            ? "h-10 w-10"
-            : "h-9 w-9"),
+            ? "h-11 w-11"
+            : "h-10 w-10"),
     variant === "primary" &&
-      "bg-coral text-white hover:bg-coral-600 dark:bg-coral dark:text-white dark:hover:bg-coral-600",
+      "bg-blue-600 text-white shadow-sm hover:bg-blue-700 active:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-700",
     variant === "secondary" &&
-      "border-[1px] border-light-600 bg-light-50 text-light-1000 dark:border-dark-600 dark:bg-dark-300 dark:text-dark-1000",
+      "border border-blue-600 bg-white text-blue-600 hover:bg-blue-50 active:bg-blue-100 dark:border-blue-500 dark:bg-dark-100 dark:text-blue-400 dark:hover:bg-dark-200",
     variant === "danger" &&
-      "dark:text-red-1000 border-[1px] border-red-600 bg-red-500 dark:border-red-600 dark:bg-red-500",
+      "bg-red-600 text-white shadow-sm hover:bg-red-700 active:bg-red-800 dark:bg-red-600 dark:hover:bg-red-700",
     variant === "ghost" &&
-      "bg-none text-light-1000 shadow-none hover:bg-light-300 dark:text-dark-1000 dark:hover:bg-dark-200",
-    props.disabled && "opacity-60",
+      "bg-transparent text-neutral-700 hover:bg-light-100 active:bg-light-200 dark:text-dark-900 dark:hover:bg-dark-200",
+    props.disabled && "opacity-50 cursor-not-allowed",
   );
 
   const content = (

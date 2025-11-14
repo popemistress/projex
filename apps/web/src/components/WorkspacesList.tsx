@@ -14,18 +14,46 @@ export default function WorkspacesList({
   isCollapsed?: boolean;
   onCloseSideNav?: () => void;
 }) {
-  const { workspace, isLoading, availableWorkspaces, switchWorkspace } =
+  const { workspace, isLoading, isWorkspaceReady, availableWorkspaces, switchWorkspace } =
     useWorkspace();
   const { openModal } = useModal();
   const [searchQuery, setSearchQuery] = useState("");
 
-  if (isLoading || isCollapsed) {
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="mb-4">
+        <div className="mb-2 px-2">
+          <span className="text-xs font-medium text-neutral-500 dark:text-dark-700">Workspaces</span>
+        </div>
+        <div className="px-2 py-2 text-sm text-neutral-400 dark:text-dark-600">
+          Loading...
+        </div>
+      </div>
+    );
+  }
+
+  // Show collapsed version
+  if (isCollapsed) {
     return null;
   }
 
-  // Don't render if no workspaces available
-  if (!availableWorkspaces || availableWorkspaces.length === 0) {
-    return null;
+  // Show "Create workspace" link if no workspaces or workspace not ready
+  if (!isWorkspaceReady || !availableWorkspaces || availableWorkspaces.length === 0) {
+    return (
+      <div className="mb-4">
+        <div className="mb-2 px-2">
+          <span className="text-xs font-medium text-neutral-500 dark:text-dark-700">Workspaces</span>
+        </div>
+        <button
+          onClick={() => openModal("NEW_WORKSPACE")}
+          className="flex w-full items-center gap-2 px-2 py-1.5 text-sm text-neutral-600 hover:text-neutral-900 dark:text-dark-700 dark:hover:text-dark-1000"
+        >
+          <HiPlus className="h-4 w-4" />
+          <span>Create workspace</span>
+        </button>
+      </div>
+    );
   }
 
   const filteredWorkspaces = availableWorkspaces.filter((ws) =>
@@ -34,47 +62,37 @@ export default function WorkspacesList({
 
   return (
     <div className="mb-4">
-      {/* Workspaces Header with Icons */}
-      <div className="mb-2 flex items-center justify-between px-2">
-        <span className="text-xs font-semibold text-neutral-600 dark:text-dark-700">
-          Workspaces
-        </span>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => openModal("NEW_FOLDER")}
-            className="rounded p-1 hover:bg-light-200 dark:hover:bg-dark-200"
-            title="Create folder"
-          >
-            <HiFolderPlus className="h-4 w-4 text-neutral-600 dark:text-dark-700" />
-          </button>
-          <button className="rounded p-1 hover:bg-light-200 dark:hover:bg-dark-200">
-            <HiEllipsisHorizontal className="h-4 w-4 text-neutral-600 dark:text-dark-700" />
-          </button>
-          <button className="rounded p-1 hover:bg-light-200 dark:hover:bg-dark-200">
-            <HiMagnifyingGlass className="h-4 w-4 text-neutral-600 dark:text-dark-700" />
-          </button>
+      {/* Workspaces Header with Workspace Name and Add Button */}
+      <div className="mb-3 flex items-center justify-between px-2">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md bg-red-500">
+            <span className="text-xs font-bold leading-none text-white">
+              {workspace.name.charAt(0).toUpperCase()}
+            </span>
+          </span>
+          <span className="min-w-0 flex-1 truncate text-sm font-medium text-neutral-900 dark:text-dark-1000">
+            {workspace.name}
+          </span>
         </div>
+        <button
+          onClick={() => openModal("NEW_WORKSPACE")}
+          className="flex h-6 w-6 items-center justify-center rounded border border-neutral-300 hover:bg-light-200 dark:border-dark-500 dark:hover:bg-dark-200"
+          title="Add workspace"
+        >
+          <HiPlus className="h-4 w-4 text-neutral-600 dark:text-dark-700" />
+        </button>
       </div>
 
-      {/* Active Workspace Dropdown */}
+      {/* Workspace Switcher Dropdown */}
       <Menu as="div" className="relative mb-3">
         {({ open }) => (
           <>
-            <Menu.Button className="flex w-full items-center justify-between rounded-md p-2 hover:bg-light-200 dark:hover:bg-dark-200">
-              <div className="flex items-center gap-2">
-                <span className="inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md bg-red-500">
-                  <span className="text-xs font-bold leading-none text-white">
-                    {workspace.name.charAt(0).toUpperCase()}
-                  </span>
-                </span>
-                <span className="min-w-0 flex-1 truncate text-left text-sm font-medium text-neutral-900 dark:text-dark-1000">
-                  {workspace.name}
-                </span>
-              </div>
+            <Menu.Button className="flex w-full items-center justify-between rounded-md p-2 text-xs text-neutral-600 hover:bg-light-200 dark:text-dark-700 dark:hover:bg-dark-200">
+              <span>Switch workspace</span>
               {open ? (
-                <TbChevronUp className="h-4 w-4 flex-shrink-0 text-neutral-600 dark:text-dark-700" />
+                <TbChevronUp className="h-3 w-3 flex-shrink-0" />
               ) : (
-                <TbChevronDown className="h-4 w-4 flex-shrink-0 text-neutral-600 dark:text-dark-700" />
+                <TbChevronDown className="h-3 w-3 flex-shrink-0" />
               )}
             </Menu.Button>
 
@@ -145,44 +163,6 @@ export default function WorkspacesList({
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="border-t border-light-400 p-2 dark:border-dark-500">
-                  <div className="flex items-center gap-2">
-                    <Menu.Item>
-                      {({ active }) => (
-                        <button
-                          onClick={() => {
-                            openModal("NEW_WORKSPACE");
-                          }}
-                          className={twMerge(
-                            "flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium",
-                            active
-                              ? "bg-light-200 dark:bg-dark-400"
-                              : "text-neutral-900 dark:text-dark-1000",
-                          )}
-                        >
-                          <HiPlus className="h-4 w-4" />
-                          <span>Add workspace</span>
-                        </button>
-                      )}
-                    </Menu.Item>
-                    <Menu.Item>
-                      {({ active }) => (
-                        <button
-                          className={twMerge(
-                            "flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium",
-                            active
-                              ? "bg-light-200 dark:bg-dark-400"
-                              : "text-neutral-900 dark:text-dark-1000",
-                          )}
-                        >
-                          <TbGridDots className="h-4 w-4" />
-                          <span>Browse all</span>
-                        </button>
-                      )}
-                    </Menu.Item>
-                  </div>
-                </div>
               </Menu.Items>
             </Transition>
           </>

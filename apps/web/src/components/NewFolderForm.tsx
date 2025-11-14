@@ -5,8 +5,107 @@ import Button from "~/components/Button";
 import { useModal } from "~/providers/modal";
 import { usePopup } from "~/providers/popup";
 import { useWorkspace } from "~/providers/workspace";
+import { api } from "~/utils/api";
 
 export function NewFolderForm() {
+  const { closeModal } = useModal();
+  const { showPopup } = usePopup();
+  const { workspace } = useWorkspace();
+  const [folderName, setFolderName] = useState("");
+  const utils = api.useUtils();
+
+  const createFolderMutation = api.folder.create.useMutation({
+    onSuccess: () => {
+      utils.folder.all.invalidate();
+      showPopup({
+        header: "Folder created",
+        message: `"${folderName}" has been created successfully.`,
+        icon: "success",
+      });
+      closeModal();
+    },
+    onError: () => {
+      showPopup({
+        header: "Unable to create folder",
+        message: "Please try again later, or contact customer support.",
+        icon: "error",
+      });
+    },
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!folderName.trim()) {
+      showPopup({
+        header: "Folder name required",
+        message: "Please enter a name for your folder.",
+        icon: "error",
+      });
+      return;
+    }
+
+    createFolderMutation.mutate({
+      workspacePublicId: workspace.publicId,
+      name: folderName.trim(),
+    });
+  };
+
+  const isCreating = createFolderMutation.isPending;
+
+  const handleCancel = () => {
+    if (!isCreating) {
+      closeModal();
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label
+          htmlFor="folderName"
+          className="block text-sm font-medium text-neutral-700 dark:text-dark-900"
+        >
+          Folder Name
+        </label>
+        <div className="mt-1 flex items-center gap-2">
+          <HiFolder className="h-5 w-5 text-neutral-400 dark:text-dark-700" />
+          <input
+            type="text"
+            id="folderName"
+            value={folderName}
+            onChange={(e) => setFolderName(e.target.value)}
+            placeholder="Enter folder name"
+            className="block w-full rounded-md border border-light-300 bg-white px-3 py-2 text-sm placeholder-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-dark-500 dark:bg-dark-100 dark:text-dark-1000 dark:placeholder-dark-700"
+            autoFocus
+            disabled={isCreating}
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-end gap-2">
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={handleCancel}
+          disabled={isCreating}
+        >
+          Cancel
+        </Button>
+        <Button
+          type="submit"
+          variant="primary"
+          disabled={isCreating || !folderName.trim()}
+        >
+          {isCreating ? "Creating..." : "Create Folder"}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+// Keep the rest of the component unchanged
+export function OldNewFolderForm() {
   const { closeModal } = useModal();
   const { showPopup } = usePopup();
   const { workspace } = useWorkspace();
@@ -28,8 +127,7 @@ export function NewFolderForm() {
     setIsCreating(true);
 
     try {
-      // TODO: Implement API call to create folder
-      // For now, we'll save to workspace-specific localStorage
+      // OLD localStorage code - keeping for reference
       const storageKey = `kan_folders_${workspace.publicId}`;
       const existingFolders = JSON.parse(localStorage.getItem(storageKey) || "[]");
       const newFolder = {
@@ -50,7 +148,6 @@ export function NewFolderForm() {
 
       closeModal();
       
-      // Trigger a custom event to notify the sidebar to refresh
       window.dispatchEvent(new CustomEvent("folderCreated"));
     } catch (error) {
       showPopup({

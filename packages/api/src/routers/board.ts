@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq, isNull, not } from "drizzle-orm";
+import { and, asc, eq, isNull, not } from "drizzle-orm";
 import { z } from "zod";
 
 import * as boardRepo from "@kan/db/repository/board.repo";
@@ -8,7 +8,7 @@ import * as activityRepo from "@kan/db/repository/cardActivity.repo";
 import * as labelRepo from "@kan/db/repository/label.repo";
 import * as listRepo from "@kan/db/repository/list.repo";
 import * as workspaceRepo from "@kan/db/repository/workspace.repo";
-import { boards } from "@kan/db/schema";
+import { boards, lists } from "@kan/db/schema";
 import { colours } from "@kan/shared/constants";
 import { generateSlug, generateUID } from "@kan/shared/utils";
 
@@ -111,6 +111,24 @@ export const boardRouter = createTRPCRouter({
         columns: {
           publicId: true,
           name: true,
+          coverImage: true,
+        },
+        with: {
+          lists: {
+            columns: {
+              publicId: true,
+              name: true,
+              index: true,
+            },
+            orderBy: [asc(lists.index)],
+          },
+          labels: {
+            columns: {
+              publicId: true,
+              name: true,
+              colourCode: true,
+            },
+          },
         },
         where: and(
           eq(boards.workspaceId, workspace.id),

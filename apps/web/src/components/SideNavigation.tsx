@@ -16,6 +16,10 @@ import {
   TbTemplate,
   TbRobot,
   TbSettings,
+  TbChartBar,
+  TbTarget,
+  TbCheckbox,
+  TbClock,
 } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";
 
@@ -36,7 +40,7 @@ import ReactiveButton from "~/components/ReactiveButton";
 import UserMenu from "~/components/UserMenu";
 import WorkspaceMenu from "~/components/WorkspaceMenu";
 import WorkspacesList from "~/components/WorkspacesList";
-import FoldersList from "~/components/FoldersList";
+import FoldersListNew from "~/components/FoldersListNew";
 import { useModal } from "~/providers/modal";
 import { useWorkspace } from "~/providers/workspace";
 import { api } from "~/utils/api";
@@ -58,7 +62,7 @@ export default function SideNavigation({
   onCloseSideNav,
 }: SideNavigationProps) {
   const router = useRouter();
-  const { workspace } = useWorkspace();
+  const { workspace, isWorkspaceReady } = useWorkspace();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isInitialised, setIsInitialised] = useState(false);
   const [isMoreExpanded, setIsMoreExpanded] = useState(false);
@@ -66,10 +70,10 @@ export default function SideNavigation({
 
   const { data: workspaceData } = api.workspace.byId.useQuery(
     {
-      workspacePublicId: workspace.publicId,
+      workspacePublicId: workspace?.publicId || "000000000000", // Fallback to meet min length requirement
     },
     {
-      enabled: !!workspace.publicId,
+      enabled: isWorkspaceReady, // Use the isWorkspaceReady flag
     },
   );
 
@@ -107,6 +111,26 @@ export default function SideNavigation({
       name: "Home",
       href: "/boards",
       icon: TbHome,
+    },
+    {
+      name: "Dashboard",
+      href: "/dashboard",
+      icon: TbChartBar,
+    },
+    {
+      name: "Goals",
+      href: "/goals",
+      icon: TbTarget,
+    },
+    {
+      name: "Habits",
+      href: "/habits",
+      icon: TbCheckbox,
+    },
+    {
+      name: "Tracking",
+      href: "/tracking",
+      icon: TbClock,
     },
   ];
 
@@ -312,9 +336,6 @@ export default function SideNavigation({
             onCloseSideNav={onCloseSideNav}
           />
 
-          {/* Folders Section */}
-          <FoldersList isCollapsed={isCollapsed} />
-
           <ul role="list" className="space-y-1">
             {navigation.map((item) => (
               <li key={item.name}>
@@ -329,6 +350,12 @@ export default function SideNavigation({
               </li>
             ))}
           </ul>
+
+          {/* Divider after Settings */}
+          <div className="mx-1 my-4 border-b border-light-300 dark:border-dark-400" />
+
+          {/* Folders Section - moved below Settings */}
+          <FoldersListNew isCollapsed={isCollapsed} />
         </div>
 
         <div className="space-y-2">

@@ -20,7 +20,7 @@ export default function BoardsListView({ isTemplate }: { isTemplate?: boolean })
       <PageHead
         title={`${isTemplate ? "Templates" : "Boards"} | ${workspace.name ?? "Workspace"}`}
       />
-      <div className="m-auto h-full max-w-[1100px] p-6 px-5 md:px-28 md:py-12">
+      <div className="h-full w-full p-6 px-5 md:px-8 md:py-12">
         {/* Header Card */}
         <div className="relative z-10 mb-6 rounded-lg border-2 border-neutral-200 bg-white p-6 shadow-lg dark:border-neutral-700 dark:bg-dark-100">
           <div className="flex w-full items-center justify-between">

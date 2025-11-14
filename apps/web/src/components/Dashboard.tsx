@@ -17,6 +17,8 @@ import GlobalSearch from "./GlobalSearch";
 import SideNavigation from "./SideNavigation";
 import Modal from "./modal";
 import { NewFolderForm } from "./NewFolderForm";
+import { NewWorkspaceForm } from "./NewWorkspaceForm";
+import { FileEditorModal } from "./FileEditorModal";
 
 interface DashboardProps {
   children: React.ReactNode;
@@ -105,13 +107,17 @@ export default function Dashboard({
     <>
       <style jsx global>{`
         html {
-          height: 100vh;
-          overflow: hidden;
+          min-height: 100vh;
+          overflow: auto;
           min-width: 320px;
           background-color: ${!isDarkMode ? "hsl(0deg 0% 97.3%)" : "#1c1c1c"};
         }
+        body {
+          min-height: 100vh;
+          overflow: auto;
+        }
       `}</style>
-      <div className="relative flex h-screen flex-col bg-light-50 dark:bg-dark-50 md:bg-light-100 md:p-3 md:dark:bg-dark-100">
+      <div className="relative flex min-h-screen flex-col bg-light-50 dark:bg-dark-50 md:bg-light-100 md:p-3 md:dark:bg-dark-100">
         {/* Mobile Header */}
         <div className="flex h-12 items-center justify-between gap-2 border-b border-light-300 bg-light-50 px-3 dark:border-dark-300 dark:bg-dark-50 md:hidden">
           <button
@@ -211,6 +217,16 @@ export default function Dashboard({
       >
         <NewFolderForm />
       </Modal>
+
+      <Modal
+        modalSize="sm"
+        isVisible={isOpen && modalContentType === "NEW_WORKSPACE"}
+      >
+        <NewWorkspaceForm />
+      </Modal>
+
+      {/* File Editor Modal */}
+      {isOpen && modalContentType.startsWith("FILE_EDITOR_") && <FileEditorModal />}
     </>
   );
 }

@@ -26,7 +26,7 @@ const socialProvidersPluginClient = {
   },
 } satisfies BetterAuthClientPlugin;
 
-export const authClient = createAuthClient({
+export const authClient: ReturnType<typeof createAuthClient> = createAuthClient({
   plugins: [
     stripeClient({
       subscription: true,

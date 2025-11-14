@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 
-import { boards, cards, workspaces } from "@kan/db/schema";
+import { boards, cards, lists, workspaces } from "@kan/db/schema";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
@@ -15,7 +15,11 @@ export const searchRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const { query, workspaceId } = input;
-      const userId = ctx.user.id;
+      const userId = ctx.user?.id;
+      
+      if (!userId) {
+        throw new Error("User not authenticated");
+      }
 
       const searchPattern = `%${query}%`;
 
@@ -55,7 +59,8 @@ export const searchRouter = createTRPCRouter({
           workspaceSlug: workspaces.slug,
         })
         .from(cards)
-        .leftJoin(boards, eq(cards.boardId, boards.id))
+        .leftJoin(lists, eq(cards.listId, lists.id))
+        .leftJoin(boards, eq(lists.boardId, boards.id))
         .leftJoin(workspaces, eq(boards.workspaceId, workspaces.id))
         .where(
           and(
