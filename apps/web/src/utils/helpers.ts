@@ -48,9 +48,6 @@ export const formatMemberDisplayName = (
 export const getAvatarUrl = (imageOrKey: string | null) => {
   if (!imageOrKey) return "";
 
-  if (imageOrKey.startsWith("http://") || imageOrKey.startsWith("https://")) {
-    return imageOrKey;
-  }
-
-  return `${env("NEXT_PUBLIC_STORAGE_URL")}/${env("NEXT_PUBLIC_AVATAR_BUCKET_NAME")}/${imageOrKey}`;
+  // Return the URL as-is (either full URL or relative path)
+  return imageOrKey;
 };

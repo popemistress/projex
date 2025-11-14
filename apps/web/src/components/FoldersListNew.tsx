@@ -697,7 +697,7 @@ function SortableFolder({
                                   e.stopPropagation();
                                   const files = Array.from(e.target.files || []);
                                   if (files.length > 0) {
-                                    // Upload files to S3
+                                    // Upload files
                                     let successCount = 0;
                                     for (const file of files) {
                                       try {
@@ -714,7 +714,7 @@ function SortableFolder({
 
                                         const extension = file.name.split('.').pop()?.toLowerCase() || '';
                                         
-                                        // Upload to S3 via API
+                                        // Upload via API
                                         await (api as any).upload.uploadFile.mutate({
                                           workspacePublicId: workspace.publicId,
                                           folderId: folder.id,
@@ -734,7 +734,7 @@ function SortableFolder({
                                     if (successCount > 0) {
                                       showPopup({
                                         header: "Files Uploaded",
-                                        message: `Successfully uploaded ${successCount} of ${files.length} file(s) to S3.`,
+                                        message: `Successfully uploaded ${successCount} of ${files.length} file(s).`,
                                         icon: "success",
                                       });
                                       // Refresh the file list
