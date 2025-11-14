@@ -15,7 +15,7 @@ import {
 import { users } from './users'
 import { workspaces } from './workspaces'
 
-// File types enum
+// Updated Enum to include 'binary' for generic uploads
 export const fileTypes = [
 	'folder',
 	'list',
@@ -26,6 +26,7 @@ export const fileTypes = [
 	'png',
 	'gif',
 	'epub',
+	'binary', // Added generic type for any file
 ] as const
 export type FileType = (typeof fileTypes)[number]
 export const fileTypeEnum = pgEnum('file_type', fileTypes)
@@ -67,9 +68,14 @@ export const files = pgTable('files', {
 	publicId: varchar('publicId', { length: 12 }).notNull().unique(),
 	name: varchar('name', { length: 255 }).notNull(),
 	type: fileTypeEnum('type').notNull(),
+	
+	// Text content for *editable* files (md, docx, lists)
 	content: text('content'),
-	contentCompressed: text('contentCompressed'), // Compressed content for large files
-	metadata: jsonb('metadata'), // Additional metadata (size, etc.)
+	contentCompressed: text('contentCompressed'),
+	
+	// NEW: Metadata stores physical storage info
+	// e.g., { path: "/uploads/my_file.pdf", size: 1024768, mimeType: "application/pdf" }
+	metadata: jsonb('metadata'),
 	folderId: bigint('folderId', { mode: 'number' }).references(() => folders.id, {
 		onDelete: 'cascade',
 	}),

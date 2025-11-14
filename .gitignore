@@ -53,3 +53,4 @@ i18n.cache
 
 # pgdata
 /apps/web/pgdata
+\n# Uploaded files\napps/web/public/uploads/*\n!apps/web/public/uploads/README.md

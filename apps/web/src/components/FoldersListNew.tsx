@@ -1,5 +1,5 @@
 import { Menu, Transition } from "@headlessui/react";
-import { Fragment } from "react";
+import { Fragment, useRef, useState } from "react";
 import {
   HiFolder,
   HiChevronRight,
@@ -15,6 +15,8 @@ import {
   HiDocument,
   HiTableCells,
   HiArrowUpTray,
+  HiCloudArrowUp,
+  HiPhoto,
 } from "react-icons/hi2";
 import { twMerge } from "tailwind-merge";
 import {
@@ -40,6 +42,7 @@ import { useWorkspace } from "~/providers/workspace";
 import { useModal } from "~/providers/modal";
 import { api } from "~/utils/api";
 import type { FileType } from "~/types/file";
+import { useFileUpload } from "~/hooks/useFileUpload";
 
 const fileTypes = ['folder', 'list', 'docx', 'md'] as const;
 
@@ -48,6 +51,11 @@ export default function FoldersListNew({ isCollapsed = false }: { isCollapsed?: 
   const { workspace } = useWorkspace();
   const { openModal } = useModal();
   const utils = api.useUtils();
+
+  // File upload state and hook
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [targetFolderId, setTargetFolderId] = useState<number | undefined>(undefined);
+  const { uploadFile, downloadFile, progress, isUploading } = useFileUpload();
 
   // Fetch folders from API
   const { data: folders = [], refetch: refetchFolders } = api.folder.all.useQuery(
@@ -252,12 +260,66 @@ export default function FoldersListNew({ isCollapsed = false }: { isCollapsed?: 
     });
   };
 
+  // New upload handlers
+  const handleTriggerUpload = (folderId?: number) => {
+    setTargetFolderId(folderId);
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      await uploadFile(file, targetFolderId);
+      // Refresh file list
+      utils.file.all.invalidate();
+    }
+    // Clear the input to allow re-uploading the same file
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleFileClick = (file: any) => {
+    const textTypes = ['list', 'docx', 'md'];
+    if (textTypes.includes(file.type)) {
+      // Open editor for text-based files
+      openModal(`FILE_EDITOR_${file.type.toUpperCase()}`, file.publicId);
+    } else {
+      // Download binary files
+      downloadFile(file.publicId);
+    }
+  };
+
   if (isCollapsed) {
     return null;
   }
 
   return (
     <div className="mb-4">
+      {/* Hidden file input */}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        className="hidden" 
+        onChange={handleFileSelected} 
+      />
+
+      {/* Global Upload Progress Indicator */}
+      {isUploading && (
+        <div className="fixed bottom-4 right-4 z-50 w-64 rounded-md border bg-white p-3 shadow-lg dark:border-dark-500 dark:bg-dark-200">
+          <div className="mb-1 flex justify-between text-xs font-medium text-neutral-700 dark:text-dark-900">
+            <span>Uploading...</span>
+            <span>{progress}%</span>
+          </div>
+          <div className="h-1.5 w-full rounded-full bg-light-200 dark:bg-dark-400">
+            <div 
+              className="h-1.5 rounded-full bg-primary-500 transition-all duration-150" 
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Folders Header with Create New Button */}
       <div className="mb-2 flex items-center justify-between px-2">
         <span className="text-xs font-semibold text-neutral-600 dark:text-dark-700">
@@ -296,6 +358,24 @@ export default function FoldersListNew({ isCollapsed = false }: { isCollapsed?: 
                     >
                       <HiFolder className="h-4 w-4" />
                       <span>Folder</span>
+                    </button>
+                  )}
+                </Menu.Item>
+
+                {/* Upload File */}
+                <Menu.Item>
+                  {({ active }) => (
+                    <button
+                      onClick={() => handleTriggerUpload(undefined)}
+                      className={twMerge(
+                        "flex w-full items-center gap-3 px-4 py-2 text-sm",
+                        active
+                          ? "bg-light-100 dark:bg-dark-300"
+                          : "text-neutral-700 dark:text-dark-900"
+                      )}
+                    >
+                      <HiCloudArrowUp className="h-4 w-4" />
+                      <span>Upload File</span>
                     </button>
                   )}
                 </Menu.Item>
@@ -673,93 +753,24 @@ function SortableFolder({
 
                       <div className="my-1 border-t border-light-300 dark:border-dark-500" />
 
-                      {/* Upload File */}
+                      {/* Upload to folder */}
                       <Menu.Item>
                         {({ active }) => (
-                          <label
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleTriggerUpload(folder.id);
+                            }}
                             className={twMerge(
-                              "flex w-full cursor-pointer items-center gap-3 px-4 py-2 text-sm",
+                              "flex w-full items-center gap-3 px-4 py-2 text-sm",
                               active
                                 ? "bg-light-100 dark:bg-dark-300"
                                 : "text-neutral-700 dark:text-dark-900"
                             )}
                           >
-                            <HiArrowUpTray className="h-4 w-4" />
-                            <span>Upload</span>
-                            <input
-                              type="file"
-                              className="hidden"
-                              accept=".pdf,.md,.xls,.xlsx,.doc,.docx,.gif,.jpg,.jpeg,.png,.epub"
-                              multiple
-                              onChange={async (e) => {
-                                try {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  const files = Array.from(e.target.files || []);
-                                  if (files.length > 0) {
-                                    // Upload files
-                                    let successCount = 0;
-                                    for (const file of files) {
-                                      try {
-                                        // Read file as base64
-                                        const reader = new FileReader();
-                                        const fileData = await new Promise<string>((resolve, reject) => {
-                                          reader.onload = () => {
-                                            const base64 = (reader.result as string).split(',')[1];
-                                            resolve(base64);
-                                          };
-                                          reader.onerror = reject;
-                                          reader.readAsDataURL(file);
-                                        });
-
-                                        const extension = file.name.split('.').pop()?.toLowerCase() || '';
-                                        
-                                        // Upload via API
-                                        await (api as any).upload.uploadFile.mutate({
-                                          workspacePublicId: workspace.publicId,
-                                          folderId: folder.id,
-                                          fileName: file.name,
-                                          fileType: extension,
-                                          fileSize: file.size,
-                                          mimeType: file.type || 'application/octet-stream',
-                                          fileData,
-                                        });
-                                        
-                                        successCount++;
-                                      } catch (fileError) {
-                                        console.error(`Error uploading ${file.name}:`, fileError);
-                                      }
-                                    }
-                                    
-                                    if (successCount > 0) {
-                                      showPopup({
-                                        header: "Files Uploaded",
-                                        message: `Successfully uploaded ${successCount} of ${files.length} file(s).`,
-                                        icon: "success",
-                                      });
-                                      // Refresh the file list
-                                      utils?.file.getAllByWorkspace.invalidate();
-                                    } else {
-                                      showPopup({
-                                        header: "Upload Failed",
-                                        message: "Failed to upload files. Please try again.",
-                                        icon: "error",
-                                      });
-                                    }
-                                  }
-                                  // Reset the input
-                                  e.target.value = '';
-                                } catch (error) {
-                                  console.error('File upload error:', error);
-                                  showPopup({
-                                    header: "Error",
-                                    message: "An error occurred while uploading files.",
-                                    icon: "error",
-                                  });
-                                }
-                              }}
-                            />
-                          </label>
+                            <HiCloudArrowUp className="h-4 w-4" />
+                            <span>Upload to folder</span>
+                          </button>
                         )}
                       </Menu.Item>
 
