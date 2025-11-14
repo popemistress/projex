@@ -1,5 +1,5 @@
 import { Menu, Transition } from "@headlessui/react";
-import { Fragment, useEffect, useState, useRef } from "react";
+import { Fragment, useEffect, useState, useRef, useCallback } from "react";
 import {
   HiFolder,
   HiChevronRight,
@@ -54,8 +54,11 @@ export default function FoldersList({ isCollapsed = false }: { isCollapsed?: boo
     { enabled: !!workspace.publicId }
   );
   
-  // Store queries for each folder
-  const [folderQueries, setFolderQueries] = useState<Record<string, any[]>>({});
+  // Mutation for fetching files in a specific folder
+  const filesInFolderMutation = api.file.all.useMutation();
+  
+  // Store files by folder ID
+  const [filesByFolderId, setFilesByFolderId] = useState<Record<number, any[]>>({});
 
   const getStorageKey = () => `kan_folders_${workspace.publicId}`;
 
@@ -65,44 +68,25 @@ export default function FoldersList({ isCollapsed = false }: { isCollapsed?: boo
     setFolders(storedFolders);
   };
 
-  useEffect(() => {
-    loadFolders();
-
-    // Listen for folder creation events
-    const handleFolderCreated = () => {
-      loadFolders();
-    };
-
-    const handleFileCreated = async (event: Event) => {
-      const customEvent = event as CustomEvent;
-      const { folderId } = customEvent.detail;
-      
-      // Refetch root files from API if no folderId
-      if (!folderId) {
-        await refetchRootFiles();
-      }
-      
-      // Reload the appropriate file list
-      if (folderId) {
-        loadFolderFiles(folderId.toString());
-      } else {
-        loadRootFiles(); // Load root files when created without folder
-      }
-    };
-
-    window.addEventListener("folderCreated", handleFolderCreated);
-    window.addEventListener("fileCreated", handleFileCreated);
-    return () => {
-      window.removeEventListener("folderCreated", handleFolderCreated);
-      window.removeEventListener("fileCreated", handleFileCreated);
-    };
-  }, [workspace.publicId]);
-
-  const loadFolderFiles = (folderId: string) => {
-    // Load from localStorage for backward compatibility
-    const localFiles = getFiles(folderId);
-    setFolderFiles((prev) => ({ ...prev, [folderId]: localFiles }));
-  };
+  // Wrap loadFolderFiles in useCallback for stability
+  const loadFolderFiles = useCallback(async (folderId: number) => {
+    try {
+      const files = await filesInFolderMutation.mutateAsync({
+        workspacePublicId: workspace.publicId,
+        folderId: folderId,
+      });
+      const mappedFiles = files.map(f => ({
+        id: f.id,
+        publicId: f.publicId,
+        name: f.name,
+        type: f.type,
+        metadata: f.metadata as any,
+      }));
+      setFilesByFolderId((prev) => ({ ...prev, [folderId]: mappedFiles }));
+    } catch (error) {
+      console.error("Failed to fetch folder files", error);
+    }
+  }, [workspace.publicId, filesInFolderMutation]);
 
   const loadRootFiles = () => {
     // Load from localStorage for backward compatibility
@@ -113,16 +97,49 @@ export default function FoldersList({ isCollapsed = false }: { isCollapsed?: boo
   };
 
   useEffect(() => {
+    loadFolders();
+
+    // Listen for folder creation events
+    const handleFolderCreated = () => {
+      utils.folder.all.invalidate();
+    };
+
+    // Updated handler for file creation with intelligent refetching
+    const handleFileCreated = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { folderId } = customEvent.detail;
+
+      if (folderId) {
+        // A file was added to a specific folder - refetch just that folder
+        loadFolderFiles(folderId);
+      } else {
+        // A file was added to the root - invalidate root query
+        utils.file.all.invalidate();
+      }
+    };
+
+    window.addEventListener("folderCreated", handleFolderCreated);
+    window.addEventListener("fileCreated", handleFileCreated as EventListener);
+    return () => {
+      window.removeEventListener("folderCreated", handleFolderCreated);
+      window.removeEventListener("fileCreated", handleFileCreated as EventListener);
+    };
+  }, [utils, loadFolderFiles]);
+
+  useEffect(() => {
     // Load root files on mount
     loadRootFiles();
     
     // Load files for all expanded folders
     folders.forEach((folder) => {
       if (folder.isExpanded) {
-        loadFolderFiles(folder.id);
+        const numericId = parseInt(folder.id);
+        if (!isNaN(numericId)) {
+          loadFolderFiles(numericId);
+        }
       }
     });
-  }, [folders, apiRootFiles]);
+  }, [folders, apiRootFiles, loadFolderFiles]);
 
   const toggleFolder = (folderId: string) => {
     const updatedFolders = folders.map((folder) =>
@@ -205,12 +222,10 @@ export default function FoldersList({ isCollapsed = false }: { isCollapsed?: boo
   // Upload handlers with setTimeout fix for Headless UI Menu
   const handleTriggerUpload = (folderId?: number) => {
     setTargetFolderId(folderId);
-    // 100ms delay allows the Menu to close cleanly before opening file dialog
+    // 50ms delay allows the Menu to close cleanly before opening file dialog
     setTimeout(() => {
-      if (fileInputRef.current) {
-        fileInputRef.current.click();
-      }
-    }, 100);
+      fileInputRef.current?.click();
+    }, 50);
   };
 
   const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -820,31 +835,35 @@ export default function FoldersList({ isCollapsed = false }: { isCollapsed?: boo
               {/* Folder content - Files */}
               {folder.isExpanded && (
                 <div className="ml-8 mt-1 space-y-1">
-                  {(folderFiles[folder.id]?.length ?? 0) > 0 ? (
-                    folderFiles[folder.id]!.map((file) => (
-                      <button
-                        key={file.id}
-                        onClick={() => {
-                          if (['docx', 'md', 'txt', 'xlsx'].includes(file.type)) {
-                            openModal('FILE_EDITOR_' + file.type.toUpperCase(), `${file.id}_${folder.id}`);
-                          }
-                        }}
-                        className="flex w-full items-center gap-2 rounded-md p-1.5 text-sm hover:bg-light-200 dark:hover:bg-dark-200 text-neutral-600 dark:text-dark-900"
-                      >
-                        {file.type === 'list' && <HiListBullet className="h-4 w-4 flex-shrink-0" />}
-                        {file.type === 'docx' && <HiDocumentText className="h-4 w-4 flex-shrink-0" />}
-                        {file.type === 'md' && <HiDocument className="h-4 w-4 flex-shrink-0" />}
-                        {file.type === 'txt' && <HiDocumentText className="h-4 w-4 flex-shrink-0" />}
-                        {file.type === 'xlsx' && <HiTableCells className="h-4 w-4 flex-shrink-0" />}
-                        {file.type === 'folder' && <HiFolder className="h-4 w-4 flex-shrink-0" />}
-                        <span className="flex-1 truncate text-left">{file.name}</span>
-                      </button>
-                    ))
-                  ) : (
-                    <div className="rounded-md p-2 text-xs text-neutral-500 dark:text-dark-700">
-                      No files in this folder yet
-                    </div>
-                  )}
+                  {(() => {
+                    const numericId = parseInt(folder.id);
+                    const files = !isNaN(numericId) ? filesByFolderId[numericId] : [];
+                    return (files?.length ?? 0) > 0 ? (
+                      files!.map((file) => (
+                        <button
+                          key={file.id}
+                          onClick={() => {
+                            if (['docx', 'md', 'txt', 'xlsx'].includes(file.type)) {
+                              openModal('FILE_EDITOR_' + file.type.toUpperCase(), `${file.id}_${folder.id}`);
+                            }
+                          }}
+                          className="flex w-full items-center gap-2 rounded-md p-1.5 text-sm hover:bg-light-200 dark:hover:bg-dark-200 text-neutral-600 dark:text-dark-900"
+                        >
+                          {file.type === 'list' && <HiListBullet className="h-4 w-4 flex-shrink-0" />}
+                          {file.type === 'docx' && <HiDocumentText className="h-4 w-4 flex-shrink-0" />}
+                          {file.type === 'md' && <HiDocument className="h-4 w-4 flex-shrink-0" />}
+                          {file.type === 'txt' && <HiDocumentText className="h-4 w-4 flex-shrink-0" />}
+                          {file.type === 'xlsx' && <HiTableCells className="h-4 w-4 flex-shrink-0" />}
+                          {file.type === 'folder' && <HiFolder className="h-4 w-4 flex-shrink-0" />}
+                          <span className="flex-1 truncate text-left">{file.name}</span>
+                        </button>
+                      ))
+                    ) : (
+                      <div className="rounded-md p-2 text-xs text-neutral-500 dark:text-dark-700">
+                        No files in this folder yet
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
             </div>
