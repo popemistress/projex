@@ -4,8 +4,9 @@ import fs from 'fs-extra';
 import path from 'path';
 
 import { createDrizzleClient } from '@kan/db/client';
-import { files, fileTypes } from '@kan/db/schema';
+import { files, fileTypes, workspaces } from '@kan/db/schema';
 import { generateUID } from '@kan/shared';
+import { eq } from 'drizzle-orm';
 
 export const config = {
 	api: {
@@ -40,23 +41,46 @@ export default async function handler(
 	});
 
 	try {
-		const [fields, incomingFiles] = await form.parse(req);
+		// Create database client once at the start
+		const db = createDrizzleClient();
+
+		// Use promise wrapper for better error handling
+		const [fields, incomingFiles] = await new Promise<[formidable.Fields, formidable.Files]>((resolve, reject) => {
+			form.parse(req, (err, fields, files) => {
+				if (err) reject(err);
+				else resolve([fields, files]);
+			});
+		});
 
 		const uploadedFile = incomingFiles.file?.[0];
 		if (!uploadedFile) throw new Error('No file uploaded');
 
-		// Get metadata from form fields
-		const workspaceId = parseInt(fields.workspaceId?.[0] || '0');
-		const folderId = fields.folderId?.[0]
-			? parseInt(fields.folderId[0])
-			: null;
-		const createdBy = fields.userId?.[0]; // Assumes userId is passed; get from session if possible
+		// Parse fields (formidable v3 returns arrays for fields)
+		const workspacePublicIdRaw = Array.isArray(fields.workspacePublicId) ? fields.workspacePublicId[0] : fields.workspacePublicId;
+		const folderIdRaw = Array.isArray(fields.folderId) ? fields.folderId[0] : fields.folderId;
+		const userIdRaw = Array.isArray(fields.userId) ? fields.userId[0] : fields.userId;
 
-		if (!workspaceId || !createdBy) {
+		const workspacePublicId = workspacePublicIdRaw;
+		const folderId = folderIdRaw ? parseInt(folderIdRaw) : null;
+		const createdBy = userIdRaw;
+
+		if (!workspacePublicId || !createdBy) {
 			// Clean up orphaned file if validation fails
 			await fs.unlink(uploadedFile.filepath);
-			return res.status(400).json({ error: 'Missing required metadata' });
+			return res.status(400).json({ error: 'Missing required metadata (workspacePublicId or userId)' });
 		}
+
+		// Get the numeric workspace ID from publicId
+		const workspace = await db.query.workspaces.findFirst({
+			where: eq(workspaces.publicId, workspacePublicId),
+		});
+
+		if (!workspace) {
+			await fs.unlink(uploadedFile.filepath);
+			return res.status(404).json({ error: 'Workspace not found' });
+		}
+
+		const workspaceId = workspace.id;
 
 		// Determine file type from schema enum
 		const ext = path
@@ -73,7 +97,6 @@ export default async function handler(
 		);
 
 		// Save reference to Database
-		const db = createDrizzleClient();
 		const [newFileRecord] = await db
 			.insert(files)
 			.values({

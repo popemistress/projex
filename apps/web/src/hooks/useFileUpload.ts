@@ -25,12 +25,12 @@ export function useFileUpload() {
 			}
 
 			setIsUploading(true);
-			setProgress(0);
+			setProgress(1); // Start at 1% to show immediate feedback
 
 			return new Promise((resolve, reject) => {
 				const formData = new FormData();
 				formData.append('file', file);
-				formData.append('workspaceId', workspace.id.toString()); // Pass workspace ID
+				formData.append('workspacePublicId', workspace.publicId); // Pass workspace public ID
 				formData.append('userId', session.user.id); // Pass user ID
 				if (folderId) {
 					formData.append('folderId', folderId.toString());
@@ -38,7 +38,7 @@ export function useFileUpload() {
 
 				const xhr = new XMLHttpRequest();
 
-				// Listen for progress events
+				// Track Upload Progress
 				xhr.upload.onprogress = (event) => {
 					if (event.lengthComputable) {
 						const percentComplete = (event.loaded / event.total) * 100;
@@ -46,43 +46,57 @@ export function useFileUpload() {
 					}
 				};
 
-				// Handle completion
+				// Handle Completion
 				xhr.onload = () => {
-					setIsUploading(false);
-					if (xhr.status === 200) {
-						const response = JSON.parse(xhr.responseText);
-						showPopup({
-							header: 'Upload Complete',
-							message: `"${file.name}" has been uploaded.`,
-							icon: 'success',
-						});
-						// Dispatch event to refresh file list
-						window.dispatchEvent(
-							new CustomEvent('fileCreated', { detail: { folderId } })
-						);
-						resolve(response);
+					if (xhr.status >= 200 && xhr.status < 300) {
+						// Force 100% on success so UI reflects completion
+						setProgress(100);
+
+						try {
+							const response = JSON.parse(xhr.responseText);
+							showPopup({
+								header: 'Upload Complete',
+								message: `"${file.name}" uploaded successfully.`,
+								icon: 'success',
+							});
+
+							// Slight delay to let user see the 100% bar before hiding
+							setTimeout(() => {
+								setIsUploading(false);
+								setProgress(0);
+
+								// Dispatch event to refresh list
+								window.dispatchEvent(
+									new CustomEvent('fileCreated', { detail: { folderId } })
+								);
+								resolve(response);
+							}, 500);
+						} catch (e) {
+							setIsUploading(false);
+							reject('Invalid server response');
+						}
 					} else {
+						setIsUploading(false);
 						showPopup({
 							header: 'Upload Failed',
-							message: 'An error occurred during upload.',
+							message: `Server Error: ${xhr.statusText}`,
 							icon: 'error',
 						});
 						reject(xhr.statusText);
 					}
 				};
 
-				// Handle errors
+				// Handle Errors
 				xhr.onerror = () => {
 					setIsUploading(false);
 					showPopup({
 						header: 'Network Error',
-						message: 'Could not connect to server.',
+						message: 'Connection interrupted.',
 						icon: 'error',
 					});
 					reject('Network Error');
 				};
 
-				// Start the request
 				xhr.open('POST', '/api/storage/upload');
 				xhr.send(formData);
 			});

@@ -1,0 +1,403 @@
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { Button } from "@headlessui/react";
+import { env } from "next-runtime-env";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
+import { HiBolt } from "react-icons/hi2";
+import {
+  TbLayoutSidebarLeftCollapse,
+  TbLayoutSidebarLeftExpand,
+  TbHome,
+  TbBriefcase,
+  TbDotsCircleHorizontal,
+  TbChevronRight,
+  TbBolt,
+  TbTemplate,
+  TbRobot,
+  TbSettings,
+  TbChartBar,
+  TbTarget,
+  TbCheckbox,
+  TbClock,
+} from "react-icons/tb";
+import { twMerge } from "tailwind-merge";
+
+import type { Subscription } from "@kan/shared/utils";
+import { hasActiveSubscription } from "@kan/shared/utils";
+
+import boardsIconDark from "~/assets/boards-dark.json";
+import boardsIconLight from "~/assets/boards-light.json";
+import membersIconDark from "~/assets/members-dark.json";
+import membersIconLight from "~/assets/members-light.json";
+import settingsIconDark from "~/assets/settings-dark.json";
+import settingsIconLight from "~/assets/settings-light.json";
+import templatesIconDark from "~/assets/templates-dark.json";
+import templatesIconLight from "~/assets/templates-light.json";
+import ButtonComponent from "~/components/Button";
+import DarkModeToggle from "~/components/DarkModeToggle";
+import ReactiveButton from "~/components/ReactiveButton";
+import UserMenu from "~/components/UserMenu";
+import WorkspaceMenu from "~/components/WorkspaceMenu";
+import WorkspacesList from "~/components/WorkspacesList";
+import FoldersListNew from "~/components/FoldersListNew";
+import { useModal } from "~/providers/modal";
+import { useWorkspace } from "~/providers/workspace";
+import { api } from "~/utils/api";
+
+interface SideNavigationProps {
+  user: UserType;
+  isLoading: boolean;
+  onCloseSideNav?: () => void;
+}
+
+interface UserType {
+  email?: string | null | undefined;
+  image?: string | null | undefined;
+}
+
+export default function SideNavigation({
+  user,
+  isLoading,
+  onCloseSideNav,
+}: SideNavigationProps) {
+  const router = useRouter();
+  const { workspace, isWorkspaceReady } = useWorkspace();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isInitialised, setIsInitialised] = useState(false);
+  const [isMoreExpanded, setIsMoreExpanded] = useState(false);
+  const { openModal } = useModal();
+
+  const { data: workspaceData } = api.workspace.byId.useQuery(
+    {
+      workspacePublicId: workspace?.publicId || "000000000000", // Fallback to meet min length requirement
+    },
+    {
+      enabled: isWorkspaceReady, // Use the isWorkspaceReady flag
+    },
+  );
+
+  const subscriptions = workspaceData?.subscriptions as
+    | Subscription[]
+    | undefined;
+
+  useEffect(() => {
+    const savedState = localStorage.getItem("kan_sidebar-collapsed");
+    if (savedState !== null) {
+      setIsCollapsed(Boolean(JSON.parse(savedState)));
+    }
+    setIsInitialised(true);
+  }, []);
+
+  useEffect(() => {
+    if (isInitialised) {
+      localStorage.setItem(
+        "kan_sidebar-collapsed",
+        JSON.stringify(isCollapsed),
+      );
+    }
+  }, [isCollapsed, isInitialised]);
+
+  const { pathname } = router;
+
+  const { resolvedTheme } = useTheme();
+
+  const isCloudEnv = env("NEXT_PUBLIC_KAN_ENV") === "cloud";
+
+  const isDarkMode = resolvedTheme === "dark";
+
+  const topNavigation = [
+    {
+      name: "Home",
+      href: "/boards",
+      icon: TbHome,
+    },
+    {
+      name: "Dashboard",
+      href: "/dashboard",
+      icon: TbChartBar,
+    },
+    {
+      name: "Goals",
+      href: "/goals",
+      icon: TbTarget,
+    },
+    {
+      name: "Habits",
+      href: "/habits",
+      icon: TbCheckbox,
+    },
+    {
+      name: "Tracking",
+      href: "/tracking",
+      icon: TbClock,
+    },
+  ];
+
+  const moreSubmenu = [
+    {
+      name: "Quick search",
+      href: "#",
+      icon: TbBolt,
+      shortcut: "Ctrl+K",
+      action: () => {
+        // TODO: Implement quick search
+        console.log("Quick search");
+      },
+    },
+    {
+      name: "Template center",
+      href: "/templates",
+      icon: TbTemplate,
+    },
+    {
+      name: "Autopilot hub",
+      href: "#",
+      icon: TbRobot,
+      action: () => {
+        // TODO: Implement autopilot hub
+        console.log("Autopilot hub");
+      },
+    },
+    {
+      name: "Personalize menu",
+      href: "/settings",
+      icon: TbSettings,
+    },
+  ];
+
+  const navigation = [
+    {
+      name: "Boards",
+      href: "/boards/list",
+      icon: isDarkMode ? boardsIconDark : boardsIconLight,
+    },
+    {
+      name: "Templates",
+      href: "/templates",
+      icon: isDarkMode ? templatesIconDark : templatesIconLight,
+    },
+    {
+      name: "Members",
+      href: "/members",
+      icon: isDarkMode ? membersIconDark : membersIconLight,
+    },
+    {
+      name: "Settings",
+      href: "/settings",
+      icon: isDarkMode ? settingsIconDark : settingsIconLight,
+    },
+  ];
+
+  const toggleCollapse = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
+  return (
+    <>
+      <nav
+        className={twMerge(
+          "flex h-full w-64 flex-col justify-between border-r border-light-300 bg-light-100 p-3 dark:border-dark-300 dark:bg-dark-100 md:border-r-0 md:py-0 md:pl-0",
+          isCollapsed && "md:w-auto",
+        )}
+      >
+        <div>
+          <div className="hidden h-14 items-center justify-between pb-[18px] pt-1.5 md:flex">
+            {!isCollapsed && (
+              <Link href="/" className="block">
+                <h1 className="pl-2 text-lg font-bold tracking-tight text-neutral-900 dark:text-dark-1000">
+                  kan.bn
+                </h1>
+              </Link>
+            )}
+            <Button
+              onClick={toggleCollapse}
+              className={twMerge(
+                "flex h-8 items-center justify-center rounded-md hover:bg-light-200 dark:hover:bg-dark-200",
+                isCollapsed ? "w-full" : "w-8",
+              )}
+            >
+              {isCollapsed ? (
+                <TbLayoutSidebarLeftExpand
+                  size={18}
+                  className="text-light-900 dark:text-dark-900"
+                />
+              ) : (
+                <TbLayoutSidebarLeftCollapse
+                  size={18}
+                  className="text-light-900 dark:text-dark-900"
+                />
+              )}
+            </Button>
+          </div>
+          <div className="mx-1 mb-4 hidden w-auto border-b border-light-300 dark:border-dark-400 md:block" />
+
+          {/* Top Navigation Section */}
+          <ul role="list" className="mb-4 space-y-1">
+            {topNavigation.map((item) => {
+              const Icon = item.icon;
+              return (
+                <li key={item.name}>
+                  <Link
+                    href={item.href}
+                    onClick={() => onCloseSideNav?.()}
+                    className={twMerge(
+                      "group flex h-[34px] items-center rounded-md p-1.5 text-sm font-normal leading-6 hover:bg-light-200 hover:text-light-1000 dark:hover:bg-dark-200 dark:hover:text-dark-1000",
+                      pathname === item.href
+                        ? "bg-light-200 text-light-1000 dark:bg-dark-200 dark:text-dark-1000"
+                        : "text-neutral-600 dark:bg-dark-100 dark:text-dark-900",
+                      isCollapsed
+                        ? "justify-start gap-x-3 md:justify-center md:gap-x-0"
+                        : "gap-x-3",
+                    )}
+                    title={isCollapsed ? item.name : undefined}
+                  >
+                    <Icon size={20} className="flex-shrink-0" />
+                    <span className={twMerge(isCollapsed && "md:hidden")}>
+                      {item.name}
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+            
+            {/* More Section with Submenu */}
+            <li>
+              <button
+                onClick={() => setIsMoreExpanded(!isMoreExpanded)}
+                className={twMerge(
+                  "group flex h-[34px] w-full items-center rounded-md p-1.5 text-sm font-normal leading-6 hover:bg-light-200 hover:text-light-1000 dark:hover:bg-dark-200 dark:hover:text-dark-1000",
+                  isMoreExpanded
+                    ? "bg-light-200 text-light-1000 dark:bg-dark-200 dark:text-dark-1000"
+                    : "text-neutral-600 dark:bg-dark-100 dark:text-dark-900",
+                  isCollapsed
+                    ? "justify-start gap-x-3 md:justify-center md:gap-x-0"
+                    : "gap-x-3",
+                )}
+                title={isCollapsed ? "More" : undefined}
+              >
+                <TbDotsCircleHorizontal size={20} className="flex-shrink-0" />
+                <span className={twMerge("flex-1 text-left", isCollapsed && "md:hidden")}>
+                  More
+                </span>
+                {!isCollapsed && (
+                  <TbChevronRight
+                    size={16}
+                    className={twMerge(
+                      "transition-transform",
+                      isMoreExpanded && "rotate-90"
+                    )}
+                  />
+                )}
+              </button>
+              
+              {/* Submenu */}
+              {isMoreExpanded && !isCollapsed && (
+                <ul className="ml-7 mt-1 space-y-1 border-l border-light-300 pl-3 dark:border-dark-400">
+                  {moreSubmenu.map((subItem) => {
+                    const SubIcon = subItem.icon;
+                    return (
+                      <li key={subItem.name}>
+                        <Link
+                          href={subItem.href}
+                          onClick={(e) => {
+                            if (subItem.action) {
+                              e.preventDefault();
+                              subItem.action();
+                            }
+                            onCloseSideNav?.();
+                          }}
+                          className="group flex h-[32px] items-center justify-between rounded-md p-1.5 text-sm font-normal hover:bg-light-200 hover:text-light-1000 dark:hover:bg-dark-200 dark:hover:text-dark-1000 text-neutral-600 dark:text-dark-900"
+                        >
+                          <div className="flex items-center gap-2">
+                            <SubIcon size={18} className="flex-shrink-0" />
+                            <span>{subItem.name}</span>
+                          </div>
+                          {subItem.shortcut && (
+                            <span className="text-xs text-neutral-400 dark:text-dark-700">
+                              {subItem.shortcut}
+                            </span>
+                          )}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </li>
+          </ul>
+
+          {/* Divider */}
+          <div className="mx-1 mb-4 border-b border-light-300 dark:border-dark-400" />
+
+          {/* Workspaces Section */}
+          <WorkspacesList
+            isCollapsed={isCollapsed}
+            onCloseSideNav={onCloseSideNav}
+          />
+
+          <ul role="list" className="space-y-1">
+            {navigation.map((item) => (
+              <li key={item.name}>
+                <ReactiveButton
+                  href={item.href}
+                  current={pathname.includes(item.href)}
+                  name={item.name}
+                  json={item.icon}
+                  isCollapsed={isCollapsed}
+                  onCloseSideNav={onCloseSideNav}
+                />
+              </li>
+            ))}
+          </ul>
+
+          {/* Divider after Settings */}
+          <div className="mx-1 my-4 border-b border-light-300 dark:border-dark-400" />
+
+          {/* Folders Section - moved below Settings */}
+          <FoldersListNew isCollapsed={isCollapsed} />
+        </div>
+
+        <div className="space-y-2">
+          <div className={twMerge("flex", isCollapsed ? "justify-center" : "justify-end px-2")}>
+            <DarkModeToggle />
+          </div>
+          <UserMenu
+            email={user.email ?? ""}
+            imageUrl={user.image ?? undefined}
+            isLoading={isLoading}
+            isCollapsed={isCollapsed}
+            onCloseSideNav={onCloseSideNav}
+          />
+          {isCloudEnv &&
+            !hasActiveSubscription(subscriptions, "pro") &&
+            !hasActiveSubscription(subscriptions, "team") && (
+              <div className={twMerge(isCollapsed && "flex justify-center")}>
+                {isCollapsed ? (
+                  <ButtonComponent
+                    iconLeft={<HiBolt />}
+                    variant="secondary"
+                    href="/settings/workspace?upgrade=pro"
+                    aria-label="Upgrade to Pro"
+                    title="Upgrade to Pro"
+                    iconOnly
+                    onClick={() => openModal("UPGRADE_TO_PRO")}
+                  />
+                ) : (
+                  <ButtonComponent
+                    iconLeft={<HiBolt />}
+                    fullWidth
+                    variant="secondary"
+                    href="/settings/workspace?upgrade=pro"
+                    onClick={() => openModal("UPGRADE_TO_PRO")}
+                  >
+                    {"Upgrade to Pro"}
+                  </ButtonComponent>
+                )}
+              </div>
+            )}
+        </div>
+      </nav>
+    </>
+  );
+}

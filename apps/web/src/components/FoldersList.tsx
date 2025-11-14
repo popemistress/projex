@@ -1,5 +1,5 @@
 import { Menu, Transition } from "@headlessui/react";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useState, useRef } from "react";
 import {
   HiFolder,
   HiChevronRight,
@@ -7,6 +7,7 @@ import {
   HiPencil,
   HiPaintBrush,
   HiArrowRight,
+  HiCloudArrowUp,
   HiPlus,
   HiXMark,
   HiTrash,
@@ -21,6 +22,8 @@ import { usePopup } from "~/providers/popup";
 import { useWorkspace } from "~/providers/workspace";
 import { useModal } from "~/providers/modal";
 import { useFileCreation } from "~/hooks/useFileCreation";
+import { useFileUpload } from "~/hooks/useFileUpload";
+import { api } from "~/utils/api";
 import type { FileType } from "~/types/file";
 
 interface Folder {
@@ -38,6 +41,21 @@ export default function FoldersList({ isCollapsed = false }: { isCollapsed?: boo
   const { workspace } = useWorkspace();
   const { openModal } = useModal();
   const { createFile, getFiles } = useFileCreation();
+  const utils = api.useUtils();
+  
+  // File upload functionality
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [targetFolderId, setTargetFolderId] = useState<number | undefined>(undefined);
+  const { uploadFile, downloadFile, progress, isUploading } = useFileUpload();
+  
+  // Fetch root files from API
+  const { data: apiRootFiles = [], refetch: refetchRootFiles } = api.file.all.useQuery(
+    { workspacePublicId: workspace.publicId },
+    { enabled: !!workspace.publicId }
+  );
+  
+  // Store queries for each folder
+  const [folderQueries, setFolderQueries] = useState<Record<string, any[]>>({});
 
   const getStorageKey = () => `kan_folders_${workspace.publicId}`;
 
@@ -55,11 +73,18 @@ export default function FoldersList({ isCollapsed = false }: { isCollapsed?: boo
       loadFolders();
     };
 
-    const handleFileCreated = (event: Event) => {
+    const handleFileCreated = async (event: Event) => {
       const customEvent = event as CustomEvent;
       const { folderId } = customEvent.detail;
+      
+      // Refetch root files from API if no folderId
+      if (!folderId) {
+        await refetchRootFiles();
+      }
+      
+      // Reload the appropriate file list
       if (folderId) {
-        loadFolderFiles(folderId);
+        loadFolderFiles(folderId.toString());
       } else {
         loadRootFiles(); // Load root files when created without folder
       }
@@ -74,13 +99,17 @@ export default function FoldersList({ isCollapsed = false }: { isCollapsed?: boo
   }, [workspace.publicId]);
 
   const loadFolderFiles = (folderId: string) => {
-    const files = getFiles(folderId);
-    setFolderFiles((prev) => ({ ...prev, [folderId]: files }));
+    // Load from localStorage for backward compatibility
+    const localFiles = getFiles(folderId);
+    setFolderFiles((prev) => ({ ...prev, [folderId]: localFiles }));
   };
 
   const loadRootFiles = () => {
-    const files = getFiles(); // No folderId = root files
-    setRootFiles(files);
+    // Load from localStorage for backward compatibility
+    const localFiles = getFiles();
+    // Combine with API root files
+    const allFiles = [...localFiles, ...apiRootFiles];
+    setRootFiles(allFiles);
   };
 
   useEffect(() => {
@@ -93,7 +122,7 @@ export default function FoldersList({ isCollapsed = false }: { isCollapsed?: boo
         loadFolderFiles(folder.id);
       }
     });
-  }, [folders]);
+  }, [folders, apiRootFiles]);
 
   const toggleFolder = (folderId: string) => {
     const updatedFolders = folders.map((folder) =>
@@ -173,12 +202,58 @@ export default function FoldersList({ isCollapsed = false }: { isCollapsed?: boo
     }
   };
 
+  // Upload handlers with setTimeout fix for Headless UI Menu
+  const handleTriggerUpload = (folderId?: number) => {
+    setTargetFolderId(folderId);
+    // 100ms delay allows the Menu to close cleanly before opening file dialog
+    setTimeout(() => {
+      if (fileInputRef.current) {
+        fileInputRef.current.click();
+      }
+    }, 100);
+  };
+
+  const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      await uploadFile(file, targetFolderId);
+    }
+    // Reset input so the same file can be selected again if needed
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   if (isCollapsed) {
     return null;
   }
 
   return (
     <div className="mb-4">
+      {/* Hidden Input for file upload */}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        className="hidden" 
+        onChange={handleFileSelected} 
+      />
+
+      {/* Progress Bar with fixed z-index */}
+      {isUploading && (
+        <div className="fixed bottom-4 right-4 z-[9999] w-72 rounded-lg border border-light-300 bg-white p-4 shadow-xl dark:border-dark-500 dark:bg-dark-200">
+          <div className="mb-2 flex justify-between text-sm font-medium text-neutral-700 dark:text-dark-900">
+            <span>Uploading {progress === 100 ? 'Complete!' : '...'}</span>
+            <span>{progress}%</span>
+          </div>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-light-200 dark:bg-dark-400">
+            <div 
+              className="h-full rounded-full bg-primary-500 transition-all duration-300 ease-out" 
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Folders Header with Create New Button */}
       <div className="mb-2 flex items-center justify-between px-2">
         <span className="text-xs font-semibold text-neutral-600 dark:text-dark-700">
@@ -669,6 +744,29 @@ export default function FoldersList({ isCollapsed = false }: { isCollapsed?: boo
                                 </Menu.Items>
                               </Transition>
                             </Menu>
+
+                            <div className="my-1 border-t border-light-300 dark:border-dark-500" />
+
+                            {/* Upload to folder */}
+                            <Menu.Item>
+                              {({ active }) => (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleTriggerUpload(parseInt(folder.id));
+                                  }}
+                                  className={twMerge(
+                                    "flex w-full items-center gap-3 px-4 py-2 text-sm",
+                                    active
+                                      ? "bg-light-100 dark:bg-dark-300"
+                                      : "text-neutral-700 dark:text-dark-900"
+                                  )}
+                                >
+                                  <HiCloudArrowUp className="h-4 w-4" />
+                                  <span>Upload to folder</span>
+                                </button>
+                              )}
+                            </Menu.Item>
 
                             <div className="my-1 border-t border-light-300 dark:border-dark-500" />
 
