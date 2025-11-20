@@ -1,0 +1,63 @@
+2025-11-20 19:54:15 +00:00:  ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+2025-11-20 19:54:15 +00:00:  We detected multiple lockfiles and selected the directory of /home/yamz/sites/package-lock.json as the root directory.
+2025-11-20 19:54:15 +00:00:  To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+2025-11-20 19:54:15 +00:00:    See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+2025-11-20 19:54:15 +00:00:  Detected additional lockfiles: 
+2025-11-20 19:54:15 +00:00:    * /home/yamz/sites/projex/pnpm-lock.yaml
+2025-11-20 19:54:15 +00:00: 
+2025-11-20 19:58:12 +00:00:  ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+2025-11-20 19:58:12 +00:00:  We detected multiple lockfiles and selected the directory of /home/yamz/sites/package-lock.json as the root directory.
+2025-11-20 19:58:12 +00:00:  To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+2025-11-20 19:58:12 +00:00:    See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+2025-11-20 19:58:12 +00:00:  Detected additional lockfiles: 
+2025-11-20 19:58:12 +00:00:    * /home/yamz/sites/projex/pnpm-lock.yaml
+2025-11-20 19:58:12 +00:00: 
+2025-11-20 20:04:38 +00:00:  ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+2025-11-20 20:04:38 +00:00:  We detected multiple lockfiles and selected the directory of /home/yamz/sites/package-lock.json as the root directory.
+2025-11-20 20:04:38 +00:00:  To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+2025-11-20 20:04:38 +00:00:    See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+2025-11-20 20:04:38 +00:00:  Detected additional lockfiles: 
+2025-11-20 20:04:38 +00:00:    * /home/yamz/sites/projex/pnpm-lock.yaml
+2025-11-20 20:04:38 +00:00: 
+2025-11-20 20:20:03 +00:00:  ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+2025-11-20 20:20:03 +00:00:  We detected multiple lockfiles and selected the directory of /home/yamz/sites/package-lock.json as the root directory.
+2025-11-20 20:20:03 +00:00:  To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+2025-11-20 20:20:03 +00:00:    See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+2025-11-20 20:20:03 +00:00:  Detected additional lockfiles: 
+2025-11-20 20:20:03 +00:00:    * /home/yamz/sites/projex/pnpm-lock.yaml
+2025-11-20 20:20:03 +00:00: 
+2025-11-20 21:45:28 +00:00:  ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+2025-11-20 21:45:28 +00:00:  We detected multiple lockfiles and selected the directory of /home/yamz/sites/package-lock.json as the root directory.
+2025-11-20 21:45:28 +00:00:  To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+2025-11-20 21:45:28 +00:00:    See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+2025-11-20 21:45:28 +00:00:  Detected additional lockfiles: 
+2025-11-20 21:45:28 +00:00:    * /home/yamz/sites/projex/pnpm-lock.yaml
+2025-11-20 21:45:28 +00:00: 
+2025-11-20 21:46:36 +00:00:  ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+2025-11-20 21:46:36 +00:00:  We detected multiple lockfiles and selected the directory of /home/yamz/sites/package-lock.json as the root directory.
+2025-11-20 21:46:36 +00:00:  To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+2025-11-20 21:46:36 +00:00:    See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+2025-11-20 21:46:36 +00:00:  Detected additional lockfiles: 
+2025-11-20 21:46:36 +00:00:    * /home/yamz/sites/projex/pnpm-lock.yaml
+2025-11-20 21:46:36 +00:00: 
+2025-11-20 21:51:32 +00:00:  ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+2025-11-20 21:51:32 +00:00:  We detected multiple lockfiles and selected the directory of /home/yamz/sites/package-lock.json as the root directory.
+2025-11-20 21:51:32 +00:00:  To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+2025-11-20 21:51:32 +00:00:    See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+2025-11-20 21:51:32 +00:00:  Detected additional lockfiles: 
+2025-11-20 21:51:32 +00:00:    * /home/yamz/sites/projex/pnpm-lock.yaml
+2025-11-20 21:51:32 +00:00: 
+2025-11-20 22:10:24 +00:00:  ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+2025-11-20 22:10:24 +00:00:  We detected multiple lockfiles and selected the directory of /home/yamz/sites/package-lock.json as the root directory.
+2025-11-20 22:10:24 +00:00:  To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+2025-11-20 22:10:24 +00:00:    See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+2025-11-20 22:10:24 +00:00:  Detected additional lockfiles: 
+2025-11-20 22:10:24 +00:00:    * /home/yamz/sites/projex/pnpm-lock.yaml
+2025-11-20 22:10:24 +00:00: 
+2025-11-20 22:19:49 +00:00:  ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+2025-11-20 22:19:49 +00:00:  We detected multiple lockfiles and selected the directory of /home/yamz/sites/package-lock.json as the root directory.
+2025-11-20 22:19:49 +00:00:  To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+2025-11-20 22:19:49 +00:00:    See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+2025-11-20 22:19:49 +00:00:  Detected additional lockfiles: 
+2025-11-20 22:19:49 +00:00:    * /home/yamz/sites/projex/pnpm-lock.yaml
+2025-11-20 22:19:49 +00:00: 
