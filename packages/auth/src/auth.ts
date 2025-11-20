@@ -14,6 +14,7 @@ import * as userRepo from "@kan/db/repository/user.repo";
 import * as workspaceRepo from "@kan/db/repository/workspace.repo";
 import * as schema from "@kan/db/schema";
 import { cloudMailerClient, sendEmail } from "@kan/email";
+import { generateUID } from "@kan/shared/utils";
 import { createStripeClient } from "@kan/stripe";
 
 export const configuredProviders = socialProviderList.reduce<
@@ -351,6 +352,30 @@ export const initAuth = (db: dbClient) => {
                   userId: user.id,
                 },
               });
+            }
+
+            // Create default workspace for new user
+            try {
+              const workspacePublicId = generateUID();
+              const workspace = await workspaceRepo.create(db, {
+                publicId: workspacePublicId,
+                name: "My Workspace",
+                slug: `${user.email.split("@")[0]}-workspace-${Date.now()}`
+                  .toLowerCase()
+                  .replace(/[^a-z0-9-]/g, "-"),
+                createdBy: user.id,
+                createdByEmail: user.email,
+              });
+
+              console.log(
+                `Created default workspace for user ${user.email}:`,
+                workspace?.publicId,
+              );
+            } catch (error) {
+              console.error(
+                "Failed to create default workspace for user:",
+                error,
+              );
             }
 
             // Avatar image is stored as-is from OAuth provider
