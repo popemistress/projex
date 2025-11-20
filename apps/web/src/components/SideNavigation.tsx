@@ -6,20 +6,20 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { HiBolt } from "react-icons/hi2";
 import {
+  TbBolt,
+  TbBriefcase,
+  TbChartBar,
+  TbCheckbox,
+  TbChevronRight,
+  TbClock,
+  TbDotsCircleHorizontal,
+  TbHome,
   TbLayoutSidebarLeftCollapse,
   TbLayoutSidebarLeftExpand,
-  TbHome,
-  TbBriefcase,
-  TbDotsCircleHorizontal,
-  TbChevronRight,
-  TbBolt,
-  TbTemplate,
   TbRobot,
   TbSettings,
-  TbChartBar,
   TbTarget,
-  TbCheckbox,
-  TbClock,
+  TbTemplate,
 } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";
 
@@ -40,7 +40,6 @@ import ReactiveButton from "~/components/ReactiveButton";
 import UserMenu from "~/components/UserMenu";
 import WorkspaceMenu from "~/components/WorkspaceMenu";
 import WorkspacesList from "~/components/WorkspacesList";
-import FoldersListNew from "~/components/FoldersListNew";
 import { useModal } from "~/providers/modal";
 import { useWorkspace } from "~/providers/workspace";
 import { api } from "~/utils/api";
@@ -260,7 +259,7 @@ export default function SideNavigation({
                 </li>
               );
             })}
-            
+
             {/* More Section with Submenu */}
             <li>
               <button
@@ -277,7 +276,12 @@ export default function SideNavigation({
                 title={isCollapsed ? "More" : undefined}
               >
                 <TbDotsCircleHorizontal size={20} className="flex-shrink-0" />
-                <span className={twMerge("flex-1 text-left", isCollapsed && "md:hidden")}>
+                <span
+                  className={twMerge(
+                    "flex-1 text-left",
+                    isCollapsed && "md:hidden",
+                  )}
+                >
                   More
                 </span>
                 {!isCollapsed && (
@@ -285,12 +289,12 @@ export default function SideNavigation({
                     size={16}
                     className={twMerge(
                       "transition-transform",
-                      isMoreExpanded && "rotate-90"
+                      isMoreExpanded && "rotate-90",
                     )}
                   />
                 )}
               </button>
-              
+
               {/* Submenu */}
               {isMoreExpanded && !isCollapsed && (
                 <ul className="ml-7 mt-1 space-y-1 border-l border-light-300 pl-3 dark:border-dark-400">
@@ -307,7 +311,7 @@ export default function SideNavigation({
                             }
                             onCloseSideNav?.();
                           }}
-                          className="group flex h-[32px] items-center justify-between rounded-md p-1.5 text-sm font-normal hover:bg-light-200 hover:text-light-1000 dark:hover:bg-dark-200 dark:hover:text-dark-1000 text-neutral-600 dark:text-dark-900"
+                          className="group flex h-[32px] items-center justify-between rounded-md p-1.5 text-sm font-normal text-neutral-600 hover:bg-light-200 hover:text-light-1000 dark:text-dark-900 dark:hover:bg-dark-200 dark:hover:text-dark-1000"
                         >
                           <div className="flex items-center gap-2">
                             <SubIcon size={18} className="flex-shrink-0" />
@@ -350,16 +354,15 @@ export default function SideNavigation({
               </li>
             ))}
           </ul>
-
-          {/* Divider after Settings */}
-          <div className="mx-1 my-4 border-b border-light-300 dark:border-dark-400" />
-
-          {/* Folders Section - moved below Settings */}
-          <FoldersListNew isCollapsed={isCollapsed} />
         </div>
 
         <div className="space-y-2">
-          <div className={twMerge("flex", isCollapsed ? "justify-center" : "justify-end px-2")}>
+          <div
+            className={twMerge(
+              "flex",
+              isCollapsed ? "justify-center" : "justify-end px-2",
+            )}
+          >
             <DarkModeToggle />
           </div>
           <UserMenu
