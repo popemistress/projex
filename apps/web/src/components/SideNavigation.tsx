@@ -13,6 +13,7 @@ import {
   TbChevronRight,
   TbClock,
   TbDotsCircleHorizontal,
+  TbFileText,
   TbHome,
   TbLayoutSidebarLeftCollapse,
   TbLayoutSidebarLeftExpand,
@@ -354,6 +355,36 @@ export default function SideNavigation({
               </li>
             ))}
           </ul>
+
+          {/* Divider after Settings */}
+          <div className="mx-1 my-4 border-b border-light-300 dark:border-dark-400" />
+
+          {/* Documents Section */}
+          <div className="space-y-1">
+            <div className="px-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-700">
+                Documents
+              </h3>
+            </div>
+            <ul role="list" className="space-y-1">
+              <li>
+                <Link
+                  href="/documents"
+                  onClick={onCloseSideNav}
+                  className={twMerge(
+                    "group flex h-[40px] items-center gap-3 rounded-md px-2 text-sm font-medium transition-colors",
+                    pathname.includes("/documents")
+                      ? "bg-light-200 text-light-1000 dark:bg-dark-200 dark:text-dark-1000"
+                      : "text-neutral-600 hover:bg-light-200 hover:text-light-1000 dark:text-dark-900 dark:hover:bg-dark-200 dark:hover:text-dark-1000",
+                    isCollapsed && "justify-center px-2",
+                  )}
+                >
+                  <TbFileText size={20} className="flex-shrink-0" />
+                  {!isCollapsed && <span>All Documents</span>}
+                </Link>
+              </li>
+            </ul>
+          </div>
         </div>
 
         <div className="space-y-2">
