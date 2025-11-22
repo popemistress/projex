@@ -35,15 +35,7 @@
   },
   "license": "GPL-3.0",
   "scripts": {
-    "build": "tsc",
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "dev": "tsc",
-    "format": "prettier --check . --ignore-path ../../.gitignore",
-    "lint": "eslint",
-    "migrate": "pnpm with-env drizzle-kit migrate",
-    "push": "pnpm with-env drizzle-kit push",
-    "studio": "pnpm with-env drizzle-kit studio",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "migrate": "dotenv -e ../../.env -- drizzle-kit migrate",
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
@@ -53,18 +45,8 @@
     "drizzle-zod": "^0.5.1",
     "pg": "^8.11.3",
     "uuid": "^11.1.0",
-    "zod": "catalog:"
-  },
-  "devDependencies": {
-    "@kan/eslint-config": "workspace:*",
-    "@kan/prettier-config": "workspace:*",
-    "@kan/tsconfig": "workspace:*",
-    "@types/pg": "^8.10.9",
+    "zod": "^3.23.8",
     "dotenv-cli": "^7.4.4",
-    "drizzle-kit": "^0.28.1",
-    "eslint": "catalog:",
-    "prettier": "catalog:",
-    "typescript": "catalog:"
-  },
-  "prettier": "@kan/prettier-config"
+    "drizzle-kit": "^0.28.1"
+  }
 }
