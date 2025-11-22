@@ -1,0 +1,10 @@
+# Required environment variables
+NEXT_PUBLIC_BASE_URL=***REDACTED***
+BETTER_AUTH_SECRET=***REDACTED***
+
+# Database configuration
+POSTGRES_URL=***REDACTED***
+
+# Optional - disable email for local development
+NEXT_PUBLIC_DISABLE_EMAIL=***REDACTED***
+NEXT_PUBLIC_ALLOW_CREDENTIALS=***REDACTED***

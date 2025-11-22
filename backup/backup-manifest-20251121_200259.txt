@@ -1,0 +1,32 @@
+# Kan Project Backup Manifest
+# Created: Fri Nov 21 20:03:02 UTC 2025
+# Backup ID: 20251121_200259
+
+## Backup Contents:
+- projex-files-20251121_200259.tar.gz          # Complete project source code
+- database-*-20251121_200259.sql.gz            # PostgreSQL database dump
+- env-template-20251121_200259.txt             # Environment variables template
+- env-example-20251121_200259.txt              # Environment example file
+- ecosystem-config-20251121_200259.js          # PM2 configuration
+- nginx-config-20251121_200259.conf            # Nginx configuration
+- package-manifests-20251121_200259.tar.gz     # All package.json files
+- backup-manifest-20251121_200259.txt          # This manifest file
+
+## Restore Instructions:
+1. Extract project files: tar -xzf projex-files-20251121_200259.tar.gz
+2. Restore database: gunzip -c database-*-20251121_200259.sql.gz | psql $POSTGRES_URL
+3. Configure environment: cp env-example-20251121_200259.txt .env (then edit)
+4. Install dependencies: pnpm install
+5. Build project: pnpm build
+6. Start services: pm2 start ecosystem-config-20251121_200259.js
+
+## System Info:
+- Hostname: NeuroAcademy
+- User: yamz
+- Node Version: v22.20.0
+- PM2 Version: 6.0.13
+- PostgreSQL Version: psql (PostgreSQL) 17.6 (Ubuntu 17.6-0ubuntu0.25.04.1)
+
+## Project Status at Backup:
+- Production server running: Yes
+- Last build: 2025-11-21 19:58:40.930812468 +0000

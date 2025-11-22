@@ -6,15 +6,14 @@ import Button from "~/components/Button";
 import FeedbackModal from "~/components/FeedbackModal";
 import Modal from "~/components/modal";
 import { NewWorkspaceForm } from "~/components/NewWorkspaceForm";
-import { NewFolderForm } from "~/components/NewFolderForm";
 import { PageHead } from "~/components/PageHead";
 import { useModal } from "~/providers/modal";
 import { useWorkspace } from "~/providers/workspace";
+import { ClosedBoards } from "./components/ClosedBoards";
 import { ImportBoardsForm } from "./components/ImportBoardsForm";
+import { MyWorkspaces } from "./components/MyWorkspaces";
 import { NewBoardForm } from "./components/NewBoardForm";
 import { RecentlyVisited } from "./components/RecentlyVisited";
-import { MyWorkspaces } from "./components/MyWorkspaces";
-import { ClosedBoards } from "./components/ClosedBoards";
 import { RightSidebar } from "./components/RightSidebar";
 
 function getGreeting() {
@@ -94,13 +93,6 @@ export default function BoardsPage({ isTemplate }: { isTemplate?: boolean }) {
             isVisible={isOpen && modalContentType === "NEW_WORKSPACE"}
           >
             <NewWorkspaceForm />
-          </Modal>
-
-          <Modal
-            modalSize="sm"
-            isVisible={isOpen && modalContentType === "NEW_FOLDER"}
-          >
-            <NewFolderForm />
           </Modal>
         </>
       </div>

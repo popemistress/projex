@@ -14,11 +14,9 @@ import { useModal } from "~/providers/modal";
 import { useWorkspace, WorkspaceProvider } from "~/providers/workspace";
 import DarkModeToggle from "./DarkModeToggle";
 import GlobalSearch from "./GlobalSearch";
-import SideNavigation from "./SideNavigation";
 import Modal from "./modal";
-import { NewFolderForm } from "./NewFolderForm";
 import { NewWorkspaceForm } from "./NewWorkspaceForm";
-import { FileEditorModal } from "./FileEditorModal";
+import SideNavigation from "./SideNavigation";
 
 interface DashboardProps {
   children: React.ReactNode;
@@ -211,12 +209,6 @@ export default function Dashboard({
       </div>
 
       {/* Global Modals */}
-      <Modal
-        modalSize="sm"
-        isVisible={isOpen && modalContentType === "NEW_FOLDER"}
-      >
-        <NewFolderForm />
-      </Modal>
 
       <Modal
         modalSize="sm"
@@ -224,9 +216,6 @@ export default function Dashboard({
       >
         <NewWorkspaceForm />
       </Modal>
-
-      {/* File Editor Modal */}
-      {isOpen && modalContentType.startsWith("FILE_EDITOR_") && <FileEditorModal />}
     </>
   );
 }

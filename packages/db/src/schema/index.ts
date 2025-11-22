@@ -2,6 +2,7 @@ export * from "./auth";
 export * from "./boards";
 export * from "./cards";
 export * from "./checklists";
+export * from "./documents";
 export * from "./feedback";
 export * from "./files";
 export * from "./goals";

@@ -23,6 +23,14 @@
     "./repository/*": {
       "types": "./dist/repository/*.d.ts",
       "default": "./src/repository/*.ts"
+    },
+    "./filez-client": {
+      "types": "./dist/filez-client.d.ts",
+      "default": "./src/filez-client.ts"
+    },
+    "./filez-schema": {
+      "types": "./dist/filez-schema.d.ts",
+      "default": "./src/filez-schema.ts"
     }
   },
   "license": "GPL-3.0",
